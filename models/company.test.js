@@ -86,7 +86,60 @@ describe("findAll", function () {
     ]);
   });
 });
-
+/* Test filtering*/
+describe("filter", function () {
+  // Filter by name
+  test("filter by name", async function () {
+    const criteria = {name: "3"}
+    const result = await Company.findAll(criteria)
+    expect(result).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        numEmployees: 3,
+        description: "Desc3",
+        logoUrl: "http://c3.img",
+      }
+    ]);
+  });
+// Filter by number of employees
+  test("filter by num_employees", async function () {
+    const criteria = {minEmployees: 2, maxEmployees:5}
+    const result = await Company.findAll(criteria)
+    expect(result).toEqual([{
+      handle: "c2",
+      name: "C2",
+      numEmployees: 2,
+      description: "Desc2",
+      logoUrl: "http://c2.img",
+      
+    },
+      {
+        handle: "c3",
+        name: "C3",
+        numEmployees: 3,
+        description: "Desc3",
+        logoUrl: "http://c3.img",
+        
+      }
+    ]);
+  });
+// Filter by both name and employees
+  test("filter by name and num_employees", async function () {
+    const criteria = {name: "3", minEmployees: 2, maxEmployees:5}
+    const result = await Company.findAll(criteria)
+    expect(result).toEqual([
+      {
+        handle: "c3",
+        name: "C3",
+        numEmployees: 3,
+        description: "Desc3",
+        logoUrl: "http://c3.img",
+        
+      }
+    ]);
+  });
+});
 /************************************** get */
 
 describe("get", function () {
@@ -98,6 +151,7 @@ describe("get", function () {
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",
+      
     });
   });
 

@@ -103,13 +103,17 @@ class User {
 
   static async findAll() {
     const result = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           ORDER BY username`,
+          `SELECT u.username,
+                  u.first_name AS "firstName",
+                  u.last_name AS "lastName",
+                  u.email,
+                  u.is_admin AS "isAdmin",
+                  json_agg(a.job_id) AS jobs
+           FROM users AS u
+           LEFT JOIN applications AS a
+           ON (u.username = a.username)
+           GROUP BY u.username
+           ORDER BY u.username`,
     );
 
     return result.rows;
@@ -125,13 +129,15 @@ class User {
 
   static async get(username) {
     const userRes = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
-           WHERE username = $1`,
+          `SELECT u.username,
+                  u.first_name AS "firstName",
+                  u.last_name AS "lastName",
+                  u.email,
+                  u.is_admin AS "isAdmin",
+                  json_agg(a.job_id) AS jobs
+           FROM users AS u
+           LEFT JOIN applications AS a ON (u.username = a.username) 
+           WHERE u.username = $1 GROUP BY u.username`,
         [username],
     );
 
@@ -188,6 +194,22 @@ class User {
 
     delete user.password;
     return user;
+  }
+
+  /*Apply for a job */
+
+  static async apply(username, job_id){
+    const jobExists = await db.query(`SELECT id FROM jobs WHERE id=$1`, [job_id]);
+    if(!jobExists.rows[0]) throw new NotFoundError(`No job: ${jobId}`);
+
+    const userExists = await db.query(`SELECT username FROM users WHERE username = $1`, [username]);
+    if(!userExists.rows[0]) throw new NotFoundError(`No username: ${username}`);
+
+    await db.query(`
+    INSERT INTO applications
+    (username, job_id)
+    VALUES ($1, $2)`, [username, job_id])
+    
   }
 
   /** Delete given user from database; returns undefined. */
